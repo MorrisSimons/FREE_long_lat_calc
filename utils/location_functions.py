@@ -16,36 +16,26 @@ def predict_future_distance(current_long, current_lat, target_long, target_lat, 
         time (float): Time interval in seconds.
 
     Returns:
-        tuple: (future_longitude, future_latitude, distance_traveled, percent_complete)
-            - future_longitude (float): Predicted longitude after 'time' seconds.
-            - future_latitude (float): Predicted latitude after 'time' seconds.
+        tuple: (Predicted_longitude, Predicted_latitude, distance_traveled, percent_complete)
+            - Predicted_longitude (float): Predicted longitude after 'time' seconds.
+            - Predicted_latitude (float): Predicted latitude after 'time' seconds.
             - distance_traveled (float): Distance moved in meters.
             - percent_complete (float): Trip completion percentage (0–100).
     """
-    # Convert speed from km/s to m/s (assuming input is in km/s)
-    speed_ms = speed * 1000  # Convert km/s to m/s
+   
+    distance_traveled = ((speed * 1000)/3600) * time
     
-    # Calculate distance traveled in the given time
-    distance_traveled = speed_ms * time
+    # Calculate change in coordinates # https://www.sciencing.com/convert-distances-degrees-meters-7858322/
+    lat_change = (distance_traveled * math.cos(math.radians(direction))) / 111111.0
+    lon_change = (distance_traveled * math.sin(math.radians(direction))) / (111111.0 * math.cos(math.radians(current_lat)))
     
-    # Convert direction to radians
-    direction_rad = math.radians(direction)
-    
-    # Calculate change in coordinates
-    # Using approximate conversion: 1 degree lat ≈ 111,111 meters
-    # 1 degree lon ≈ 111,111 * cos(lat) meters
-    lat_change = (distance_traveled * math.cos(direction_rad)) / 111111.0
-    lon_change = (distance_traveled * math.sin(direction_rad)) / (111111.0 * math.cos(math.radians(current_lat)))
-    
-    # Calculate future position
-    future_latitude = current_lat + lat_change
-    future_longitude = current_long + lon_change
+    # Calculate predicted position
+    Predicted_latitude = current_lat + lat_change
+    Predicted_longitude = current_long + lon_change
     
     # Calculate total distance from current to target using geodesic
     total_distance = geodesic((current_lat, current_long), (target_lat, target_long)).meters
-    
-    # Calculate distance from future position to target
-    remaining_distance = geodesic((future_latitude, future_longitude), (target_lat, target_long)).meters
+    remaining_distance = geodesic((Predicted_latitude, Predicted_longitude), (target_lat, target_long)).meters
     
     # Calculate percentage complete
     if total_distance > 0:
@@ -55,6 +45,6 @@ def predict_future_distance(current_long, current_lat, target_long, target_lat, 
     else:
         percent_complete = 100.0  # Already at target
     
-    return (future_longitude, future_latitude, distance_traveled, percent_complete)
+    return (Predicted_longitude, Predicted_latitude, distance_traveled, percent_complete)
 
 
