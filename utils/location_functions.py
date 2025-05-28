@@ -70,6 +70,8 @@ def predict_future_dist_with_history(history, target_long, target_lat, time) -> 
             - percent_complete (float): Trip completion percentage (0–100).
     """
 
+
+
     distance_traveled = ((speed * 1000)/3600) * time
     
     # Calculate change in coordinates # https://www.sciencing.com/convert-distances-degrees-meters-7858322/
@@ -93,3 +95,7 @@ def predict_future_dist_with_history(history, target_long, target_lat, time) -> 
         percent_complete = 100.0  # Already at target
     
     return (Predicted_longitude, Predicted_latitude, distance_traveled, percent_complete)
+
+
+if __name__ == "__main__":
+    print("location funtions module loaded successfully.")
