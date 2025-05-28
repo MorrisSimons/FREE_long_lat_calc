@@ -1,5 +1,6 @@
 import math
 from geopy.distance import geodesic
+from datetime import datetime
 
 def predict_future_dist_with_dir_and_speed(current_long, current_lat, target_long, target_lat, direction, speed, time) -> tuple:
     """
@@ -48,18 +49,25 @@ def predict_future_dist_with_dir_and_speed(current_long, current_lat, target_lon
     return (Predicted_longitude, Predicted_latitude, distance_traveled, percent_complete)
 
 
+
+def _bearing(p1, p2):
+    """Initial bearing (deg from true north) p1→p2."""
+    lat1, lon1, lat2, lon2 = map(math.radians, (*p1, *p2))
+    dlon = lon2 - lon1
+    x = math.sin(dlon) * math.cos(lat2)
+    y = math.cos(lat1)*math.sin(lat2) - math.sin(lat1)*math.cos(lat2)*math.cos(dlon)
+    brng = math.degrees(math.atan2(x, y))
+    return (brng + 360) % 360
+
 def predict_future_dist_with_history(history, target_long, target_lat, time) -> tuple:
     """
     Predicts your position after a set time, given current 
     and target coordinates, movement direction, and speed.
 
     Args:
-        current_long (float): Current longitude.
-        current_lat (float): Current latitude.
+        history (list) with timestamps, direction and coordinates:
         target_long (float): Target longitude.
         target_lat (float): Target latitude.
-        direction (float): Movement direction in degrees (0 = north, 90 = east).
-        speed (float): Speed in km/second.
         time (float): Time interval in seconds.
 
     Returns:
@@ -70,10 +78,24 @@ def predict_future_dist_with_history(history, target_long, target_lat, time) -> 
             - percent_complete (float): Trip completion percentage (0–100).
     """
 
+    lat1 = history[0][1]
+    lon1 = history[0][2]
+    lat2 = history[-1][1]
+    lon2 = history[-1][2]
+    current_lat = history[-1][1]
+    current_long = history[-1][2]
 
-
-    distance_traveled = ((speed * 1000)/3600) * time
+    # direction based on first and last history entries
+    direction = _bearing((lat1, lon1), (lat2, lon2))
     
+    # start time and end time based on first and last history entries
+    historytime = (datetime.fromisoformat(history[-1][0]) - datetime.fromisoformat(history[0][0])).total_seconds()  
+
+    # speed based on first and last history entries
+    speed = geodesic((lat1, lon1), (lat2, lon2)).meters / historytime
+
+    distance_traveled = speed * time  # in meters
+
     # Calculate change in coordinates # https://www.sciencing.com/convert-distances-degrees-meters-7858322/
     lat_change = (distance_traveled * math.cos(math.radians(direction))) / 111111.0
     lon_change = (distance_traveled * math.sin(math.radians(direction))) / (111111.0 * math.cos(math.radians(current_lat)))
