@@ -57,30 +57,4 @@ def predict_future_distance(current_long, current_lat, target_long, target_lat, 
     
     return (future_longitude, future_latitude, distance_traveled, percent_complete)
 
-# Example usage (only runs when file is executed directly)
-if __name__ == "__main__":
-    import pandas as pd
 
-    # Read GNSS data from file
-    df = pd.read_csv('gnss_data.csv')
-    # Get the most recent position from the data
-    current_long = df['longitude'].iloc[0]
-    current_lat = df['latitude'].iloc[0]
-
-    target_lat = df['latitude'].iloc[-1]
-    target_long = df['longitude'].iloc[-1]
-    direction = 43.99 
-    speed = 0.01  # 0.01 km/s (10 m/s)
-    time_interval = 60  # 60 seconds
-    
-    result = predict_future_distance(
-        current_long, current_lat, target_long, target_lat, 
-        direction, speed, time_interval
-    )
-    
-    future_lon, future_lat, dist_traveled, percent_done = result
-    
-    print("Prediction Results:")
-    print(f"Future Position: ({future_lat:.6f}, {future_lon:.6f})")
-    print(f"Distance Traveled: {dist_traveled:.2f} meters")
-    print(f"Trip Completion: {percent_done:.2f}%")
